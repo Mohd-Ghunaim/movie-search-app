@@ -18,12 +18,17 @@ const API_OPTIONS = {
 }
 
 const App = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [moviesList, setMoviesList] = useState([]);
-  const [isLoading, setIsLoading] = useState('');
-  const [debouncedSearchTerm,setDebouncedSearchTerm] = useState('');
-  const [trendingMovies, setTrendingMovies] = useState([]);
+
+const [searchTerm, setSearchTerm] = useState('');
+const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+const [moviesList, setMoviesList] = useState([]);
+const [trendingMovies, setTrendingMovies] = useState([]);
+
+const [isLoading, setIsLoading] = useState('');
+const [isTrendingLoading, setIsTrendingLoading] = useState('');
+
+const [errorMessage, setErrorMessage] = useState('');
 
   useDebounce(
     () => setDebouncedSearchTerm(searchTerm), 
@@ -65,13 +70,16 @@ const App = () => {
   }
 
   const loadTrendingMovies = async () => {
+    setIsTrendingLoading(true);
     try {
       const movies = await getTrendingMovies();
       setTrendingMovies(movies);
     } catch (error) {
       console.error('Error fetching trending movies:', error);
+    } finally {
+      setIsTrendingLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     loadTrendingMovies();
@@ -95,16 +103,24 @@ const App = () => {
 
         {trendingMovies.length > 0 && (
           <section className="trending">
-            <h2>Trending Movies</h2>
+          <h2>Trending Movies</h2>
+        
+          {isTrendingLoading ? (
+            <Spinner />
+          ) : (
             <ul>
               {trendingMovies.map((movie, index) => (
-                <li key={movie.$id} >
+                <li key={movie.$id}>
                   <p>{index + 1}</p>
-                  <img src={movie.poster_url} alt={movie.title} />
+                  <img 
+                    src={movie.poster_url || './No-poster.png'} 
+                    alt={movie.title || 'No Title Available'} 
+                  />
                 </li>
               ))}
             </ul>
-          </section>
+          )}
+        </section>
         )}
 
         <section className="all-movies">
